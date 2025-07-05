@@ -13,6 +13,10 @@ Model Context Protocol (MCP) server implementation for Crypto-Signal, providing 
 ## Quick Start
 
 ```bash
+# Clone the repository
+git clone https://github.com/myownipgit/crypto-signal-mcp.git
+cd crypto-signal-mcp
+
 # Install dependencies
 npm install
 
@@ -20,29 +24,41 @@ npm install
 npm run start
 ```
 
+## Server Architecture
+
+This MCP server implementation uses:
+
+- **JSON-RPC 2.0**: Standard protocol for remote procedure calls
+- **Multiple Transports**: Supports both stdio (for Claude Desktop) and HTTP/WebSocket transports
+- **Modular Tool Structure**: Organized by functional categories for easy extension
+
 ## MCP Tools
 
 The server provides several tool categories:
 
 ### Market Intelligence Tools
-- `get_aggregated_order_book` - Consolidated order books across exchanges
-- `get_arbitrage_opportunities` - Cross-exchange price differential detection
-- `analyze_liquidity` - In-depth liquidity analysis by exchange
+- `getAggregatedOrderBook` - Consolidated order books across exchanges
+- `getArbitrageOpportunities` - Cross-exchange price differential detection
+- `analyzeLiquidity` - In-depth liquidity analysis by exchange
+- `getMarketDepth` - Detailed order book and market microstructure analysis
 
 ### Signal Generation Tools
-- `generate_signals` - AI-enhanced signal generation based on technical indicators
-- `backtest_strategy` - Historical performance testing for trading strategies
-- `optimize_strategy` - Machine learning parameter optimization
+- `generateSignals` - AI-enhanced signal generation based on technical indicators
+- `backtestStrategy` - Historical performance testing for trading strategies
+- `optimizeStrategy` - Machine learning parameter optimization
+- `detectPatterns` - Technical chart pattern recognition
 
 ### Portfolio Management Tools
-- `optimize_portfolio` - Modern Portfolio Theory optimization
-- `analyze_risk` - VaR and risk assessment suite
-- `rebalance_portfolio` - Intelligent portfolio rebalancing
+- `optimizePortfolio` - Modern Portfolio Theory optimization
+- `calculateVaR` - Value at Risk calculation for crypto portfolios
+- `rebalancePortfolio` - Intelligent portfolio rebalancing
+- `runStressTest` - Portfolio stress testing with various scenarios
 
 ### Alert System Tools
-- `create_smart_alert` - Multi-condition alert creation
-- `analyze_social_sentiment` - Social media sentiment analysis
-- `prioritize_alerts` - Context-aware alert routing
+- `createSmartAlert` - Multi-condition alert creation
+- `analyzeSocialSentiment` - Social media sentiment analysis
+- `prioritizeAlerts` - Context-aware alert routing
+- `createPredictiveAlert` - Future-oriented alerts based on ML predictions
 
 ## Configuration
 
@@ -52,12 +68,34 @@ Configure your MCP connection in Claude Desktop by adding to `claude_desktop_con
 "mcpServers": {
   "crypto-signal": {
     "command": "node",
-    "args": ["/Users/myownip/workspace/Crypto-Signal-MCP-test1/server.js"],
+    "args": ["/path/to/crypto-signal-mcp/server.js"],
     "env": {}
   }
 }
 ```
 
+Make sure to replace `/path/to/crypto-signal-mcp` with the actual path to where you cloned the repository.
+
+## HTTP/WebSocket Usage
+
+The server can also be started in HTTP mode:
+
+```bash
+MCP_TRANSPORT=http MCP_PORT=3000 npm start
+```
+
+This will start the server on port 3000 with both HTTP and WebSocket endpoints:
+
+- HTTP: POST to `/rpc` with JSON-RPC request body
+- WebSocket: Connect to ws://localhost:3000 and send/receive JSON-RPC messages
+
 ## Integration Examples
 
-See the `/examples` directory for sample MCP client implementations demonstrating each feature set.
+See the `/examples` directory for sample implementations demonstrating each feature set:
+
+- Arbitrage Detection Dashboard
+- Portfolio Optimization Visualization
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
