@@ -48,13 +48,20 @@ app.post('/rpc', async (req, res) => {
   }
 });
 
+// Log server startup information
+console.error(`Crypto-Signal MCP server starting up...`);
+console.error(`Server info: ${JSON.stringify(serverInfo)}`);
+console.error(`Available tools: ${Object.keys(tools).join(', ')}`);
+
 // Determine which transport to use based on environment
 const transportType = process.env.MCP_TRANSPORT || 'stdio';
+console.error(`Using transport: ${transportType}`);
 
 // Start appropriate transport
 if (transportType === 'stdio') {
   // Setup stdio transport
   process.stdin.setEncoding('utf8');
+  console.error('Using stdio transport, waiting for input...');
   
   let inputBuffer = '';
   
@@ -74,12 +81,15 @@ if (transportType === 'stdio') {
         // Process messages
         for (const message of messages) {
           const result = await handleRpcRequest(message);
-          process.stdout.write(JSON.stringify(result) + '\n');
+          const jsonResponse = JSON.stringify(result);
+          process.stdout.write(jsonResponse + '\n');
+          console.error(`Sending response: ${jsonResponse}`); // Debug log
         }
       }
     } catch (error) {
       // Handle parsing error
       console.error('Error parsing input:', error);
+      console.error(error.stack);
     }
   });
   
@@ -128,6 +138,7 @@ if (transportType === 'stdio') {
 
 // Helper function to parse buffer into JSON-RPC messages
 function parseBufferIntoMessages(buffer) {
+  console.error(`Parsing buffer: ${buffer}`);
   const lines = buffer.split('\n');
   const messages = [];
   
@@ -135,13 +146,18 @@ function parseBufferIntoMessages(buffer) {
     const line = lines[i].trim();
     if (line) {
       try {
-        messages.push(JSON.parse(line));
+        console.error(`Parsing line: ${line}`);
+        const parsed = JSON.parse(line);
+        console.error(`Successfully parsed as: ${JSON.stringify(parsed)}`);
+        messages.push(parsed);
       } catch (error) {
-        console.error('Error parsing line:', line);
+        console.error(`Error parsing line: ${line}`);
+        console.error(`Parse error: ${error.message}`);
       }
     }
   }
   
+  console.error(`Parsed ${messages.length} messages`);
   return messages;
 }
 
@@ -159,6 +175,28 @@ async function handleRpcRequest(request) {
 async function handleSingleRpcRequest(request) {
   if (!request.method) {
     return jsonrpc.error(request.id, jsonrpc.JsonRpcError.invalidRequest());
+  }
+  
+  // Handle initialize method (required for Claude Desktop)
+  if (request.method === 'initialize') {
+    const toolList = Object.keys(tools).map(name => ({
+      name,
+      description: tools[name].description,
+      parameters: tools[name].parameters
+    }));
+    
+    return {
+      jsonrpc: '2.0',
+      result: {
+        serverInfo: {
+          name: serverInfo.name,
+          version: serverInfo.version,
+          capabilities: {}
+        },
+        tools: toolList
+      },
+      id: request.id
+    };
   }
   
   // Handle system methods
