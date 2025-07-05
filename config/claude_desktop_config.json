@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "crypto-signal": {
+      "command": "node",
+      "args": ["/Users/myownip/workspace/Crypto-Signal-MCP-test1/server.js"],
+      "env": {}
+    }
+  }
+}

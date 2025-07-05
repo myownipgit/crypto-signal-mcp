@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Exchange Arbitrage Detection Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .arbitrage-alert {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 107, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
+        }
+
+        .query-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .opportunities {
+            margin-top: 30px;
+        }
+
+        .opportunity-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .opportunity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .opportunity-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .profit-percentage {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .opportunity-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .detail-group {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .risk-low {
+            background: #d1e7dd;
+            color: #0a3622;
+        }
+
+        .risk-medium {
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        .risk-high {
+            background: #f8d7da;
+            color: #58151c;
+        }
+
+        .execution-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .execution-button:hover {
+            background: #218838;
+        }
+
+        .mcp-code {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .code-comment {
+            color: #6a737d;
+        }
+
+        .exchange-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .exchange-badge {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .exchange-badge.active {
+            background: #cff4fc;
+            color: #055160;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .opportunity-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Multi-Exchange Arbitrage Detection</h1>
+            <p>Discover real-time arbitrage opportunities across cryptocurrency exchanges</p>
+        </div>
+
+        <div class="arbitrage-alert">
+            <h2>🚨 HIGH PROFIT OPPORTUNITY DETECTED</h2>
+            <div style="margin: 10px 0; font-size: 1.2rem;">
+                <strong>ETH/USDT:</strong> Buy on Binance ($3,247.50) → Sell on Coinbase ($3,272.10)
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <div><strong>Profit:</strong> 0.76% ($24.60 per ETH)</div>
+                <div><strong>Execution Window:</strong> 45 seconds</div>
+                <div><strong>Required Capital:</strong> $25,000</div>
+            </div>
+        </div>
+
+        <div class="query-form">
+            <h3>Find Arbitrage Opportunities</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="symbols">Trading Pairs</label>
+                    <select id="symbols" multiple>
+                        <option value="BTC/USDT" selected>BTC/USDT</option>
+                        <option value="ETH/USDT" selected>ETH/USDT</option>
+                        <option value="SOL/USDT" selected>SOL/USDT</option>
+                        <option value="LINK/USDT" selected>LINK/USDT</option>
+                        <option value="MATIC/USDT">MATIC/USDT</option>
+                        <option value="AVAX/USDT">AVAX/USDT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="min-spread">Minimum Spread (%)</label>
+                    <input type="number" id="min-spread" value="0.5" step="0.1" min="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="include-fees">Include Exchange Fees</label>
+                    <select id="include-fees">
+                        <option value="true" selected>Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="findArbitrage()">Find Opportunities</button>
+        </div>
+
+        <div class="exchange-grid">
+            <div class="exchange-badge active">Binance</div>
+            <div class="exchange-badge active">Coinbase</div>
+            <div class="exchange-badge active">Kraken</div>
+            <div class="exchange-badge active">KuCoin</div>
+            <div class="exchange-badge">Bitfinex</div>
+            <div class="exchange-badge">Huobi</div>
+            <div class="exchange-badge">OKX</div>
+            <div class="exchange-badge">Bybit</div>
+        </div>
+
+        <div class="mcp-code">
+<span class="code-comment">// MCP Tool Call Example for Arbitrage Detection</span>
+const result = await mcp.getArbitrageOpportunities({
+    symbols: ["ETH/USDT", "BTC/USDT", "SOL/USDT", "LINK/USDT"],
+    minSpread: 0.5,
+    includesFees: true
+});
+
+<span class="code-comment">// Process results and execute trades if profitable</span>
+if (result.opportunities.length > 0) {
+    const bestOpportunity = result.opportunities[0];
+    if (bestOpportunity.netProfitPercentage > minProfitThreshold) {
+        await executeArbitrage(bestOpportunity);
+    }
+}
+</div>
+
+        <div class="opportunities">
+            <h3>Current Opportunities</h3>
+            <div class="opportunity-card">
+                <div class="opportunity-header">
+                    <div class="opportunity-title">ETH/USDT</div>
+                    <div class="profit-percentage">+0.76%</div>
+                </div>
+                <div>Buy on <strong>Binance</strong> → Sell on <strong>Coinbase</strong></div>
+                <div class="opportunity-details">
+                    <div class="detail-group">
+                        <div class="detail-label">Buy Price</div>
+                        <div class="detail-value">$3,247.50</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Sell Price</div>
+                        <div class="detail-value">$3,272.10</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Estimated Profit</div>
+                        <div class="detail-value">$24.60 per ETH</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Execution Time</div>
+                        <div class="detail-value">45ms</div>
+                    </div>
+                </div>
+                <div class="detail-group" style="margin: 15px 0;">
+                    <div class="detail-label">Trading Fees</div>
+                    <div class="detail-value">$6.52 (0.2%)</div>
+                </div>
+                <div>
+                    <span class="risk-badge risk-low">LOW RISK</span>
+                    <span class="risk-badge risk-low">HIGH LIQUIDITY</span>
+                    <span class="risk-badge risk-low">VERIFIED</span>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="execution-button">Execute Trade</button>
+                </div>
+            </div>
+
+            <div class="opportunity-card">
+                <div class="opportunity-header">
+                    <div class="opportunity-title">LINK/USDT</div>
+                    <div class="profit-percentage">+0.98%</div>
+                </div>
+                <div>Buy on <strong>Kraken</strong> → Sell on <strong>Binance</strong></div>
+                <div class="opportunity-details">
+                    <div class="detail-group">
+                        <div class="detail-label">Buy Price</div>
+                        <div class="detail-value">$14.25</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Sell Price</div>
+                        <div class="detail-value">$14.39</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Estimated Profit</div>
+                        <div class="detail-value">$14.00 per $1K</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Execution Time</div>
+                        <div class="detail-value">38ms</div>
+                    </div>
+                </div>
+                <div class="detail-group" style="margin: 15px 0;">
+                    <div class="detail-label">Trading Fees</div>
+                    <div class="detail-value">$2.86 (0.2%)</div>
+                </div>
+                <div>
+                    <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    <span class="risk-badge risk-medium">MEDIUM LIQUIDITY</span>
+                    <span class="risk-badge risk-low">VERIFIED</span>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="execution-button">Execute Trade</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function findArbitrage() {
+            alert("Finding arbitrage opportunities...\n\nThis is a static demo. In a real implementation, this would call the MCP server and display live results.");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "crypto-signal-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for cryptocurrency trading signals and market intelligence",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "crypto",
+    "trading",
+    "bitcoin",
+    "signals"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/server": "^0.5.0",
+    "ccxt": "^4.0.0"
+  }
+}
